@@ -15,3 +15,9 @@ body,html{
 	left:50%;
 	width:auto;
 }
+#fly{
+	left:50%;
+	position:absolute;
+	top:90%;
+	transform:translate(-50%,-50%);
+}

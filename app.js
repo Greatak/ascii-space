@@ -1,10 +1,12 @@
 var LaunchPad = (function(doc,win,undefined){
 	var construction = doc.getElementById("construction"),
 		characters = [],
-		height = win.innerHeight*0.9;
+		height = win.innerHeight*0.9,
+		startButton = doc.getElementById("fly");
 	
 	function Rocket(){
 		this.characters = charPosition();
+		this.graph = createGraph(this.characters);
 		this.mass = this.characters.length;
 		this.x = 0;
 		this.y = 0;
@@ -16,11 +18,41 @@ var LaunchPad = (function(doc,win,undefined){
 		}
 		this.x /= this.characters.length;
 		this.y /= this.characters.length;
+		this.prepParts();
 		for(var i = this.characters.length;i--;){
 			var dx = this.x - this.characters[i].x,
-				dy = this.y - this.characters[i].y,
-				dist = Math.sqrt((dx*dx)+(dy*dy));
-			this.characters[i].dir = [(dx/dist),(dy/dist)];
+				dy = this.y - this.characters[i].y;
+			this.characters[i].dist = Math.sqrt((dx*dx)+(dy*dy));
+			console.log(this.characters[i].key,this.characters[i].direction);
+			switch(this.characters[i].direction){
+				case 0:
+					this.characters[i].dir = [0,-1];
+					break;
+				case 1:
+					this.characters[i].dir = [.707,-.707];
+					break;
+				case 2:
+					this.characters[i].dir = [1,0];
+					break;
+				case 3:
+					this.characters[i].dir = [.707,.707];
+					break;
+				case 4:
+					this.characters[i].dir = [0,1];
+					break;
+				case 5:
+					this.characters[i].dir = [-.707,.707];
+					break;
+				case 6:
+					this.characters[i].dir = [-1,0];
+					break;
+				case 7:
+					this.characters[i].dir = [-.707,-.707];
+					break;
+				default:
+					this.characters[i].dir = [0,0];
+					break;
+			}
 		}
 		win.requestAnimationFrame(loop);
 	}
@@ -43,12 +75,65 @@ var LaunchPad = (function(doc,win,undefined){
 		this.x += (fx/this.mass)*dt || 0;
 		this.y += (fy/this.mass)*dt || 0;
 		if(this.y > height)this.y = height;
+		//console.log(ax,ay);
 		
 		construction.style.cssText = "transform:translate("+this.x+"px,"+this.y+"px)";
 	}
 	Rocket.prototype.update = update;
 	
+	function prepParts(){
+		var mass = 0;
+		for(var i = this.characters.length;i--;){
+			this.characters[i].mass = 1;
+			mass += this.characters[i].mass;
+			var dirs = ["up","right","down","left"];
+			this.characters[i].direction = -1;
+			if(this.characters[i].edges.length > 1){
+				var d1 = dirs.indexOf(this.characters[i].edges[0].direction),
+					d2 = dirs.indexOf(this.characters[i].edges[1].direction);
+				if(d1 == 0){
+					if(d2 == 1) this.characters[i].direction = 1;
+					if(d2 == 3) this.characters[i].direction = 7;
+					if(d2 == 2){
+						var d3 = dirs.indexOf(this.characters[i].edges[2].direction);
+						if(d3 == 1) this.characters[i].direction = 3;
+						if(d3 == 3) this.characters[i].direction = 1;
+					}
+				}else if(d1 == 1){
+					if(d2 == 0) this.characters[i].direction = 1;
+					if(d2 == 2) this.characters[i].direction = 3;
+					if(d2 == 3){
+						var d3 = dirs.indexOf(this.characters[i].edges[2].direction);
+						if(d3 == 0) this.characters[i].direction = 2;
+						if(d3 == 2) this.characters[i].direction = 0;
+					}
+				}else if(d1 == 2){
+					if(d2 == 1) this.characters[i].direction = 3;
+					if(d2 == 3) this.characters[i].direction = 5;
+					if(d2 == 0){
+						var d3 = dirs.indexOf(this.characters[i].edges[2].direction);
+						if(d3 == 1) this.characters[i].direction = 3;
+						if(d3 == 3) this.characters[i].direction = 1;
+					}
+				}else if(d1 == 3){
+					if(d2 == 0) this.characters[i].direction = 7;
+					if(d2 == 2) this.characters[i].direction = 5;
+					if(d2 == 1){
+						var d3 = dirs.indexOf(this.characters[i].edges[2].direction);
+						if(d3 == 0) this.characters[i].direction = 2;
+						if(d3 == 2) this.characters[i].direction = 0;
+					}
+				}
+			}else{
+				this.characters[i].direction = dirs.indexOf(this.characters[i].edges[0].direction)*2;
+			}
+		}
+	}
+	Rocket.prototype.prepParts = prepParts;
+	
 	function charPosition(){
+		prepInput();	
+	
 		var sel = win.getSelection(),
 			range = sel.getRangeAt(0),
 			printed = [];
@@ -64,12 +149,46 @@ var LaunchPad = (function(doc,win,undefined){
 		for(var i = t.length;i--;){
 			var s = {};
 			s.key = t[i].textContent;
+			s.edges = [];
 			s.upper = s.key == s.key.toUpperCase()?true:false;
 			s.x = t[i].offsetLeft + (t[i].offsetWidth/2);
 			s.y = t[i].offsetTop + (t[i].offsetHeight/2);
 			printed.push(s);
 		}
 		return printed;
+	}
+	function createGraph(array){
+		var lines = construction.childNodes,
+			nodes = [],
+			edges = [],
+			index = 0;
+		for(var i = lines.length;i--;){
+			var t = lines[i].textContent;
+			nodes[i] = [];
+			for(var j = lines[i].textContent.length;j--;){
+				if(/\s/.test(t[j])) continue;
+				nodes[i][j] = index;
+				if(nodes[i][j+1] != undefined){
+					edges.push([nodes[i][j],nodes[i][j+1]]);
+					array[nodes[i][j]].edges.push({nodes:edges[edges.length-1],direction:"right"});
+					array[nodes[i][j+1]].edges.push({nodes:edges[edges.length-1],direction:"left"});
+				}
+				if(nodes[i+1] && nodes[i+1][j] != undefined){
+					edges.push([nodes[i][j],nodes[i+1][j]]);
+					array[nodes[i][j]].edges.push({nodes:edges[edges.length-1],direction:"down"});
+					array[nodes[i+1][j]].edges.push({nodes:edges[edges.length-1],direction:"up"});
+				}
+				index++;
+			}
+		}
+		return {nodes:nodes,edges:edges};
+	}
+	function prepInput(){
+		var lines = construction.childNodes,
+			div = doc.createElement("div");
+		div.textContent = lines[0].textContent;
+		lines[0].parentNode.removeChild(lines[0]);
+		construction.insertBefore(div,construction.firstChild);
 	}
 	
 	var pressedKeys = [];
@@ -87,7 +206,10 @@ var LaunchPad = (function(doc,win,undefined){
 	function build(){
 		rocket = new Rocket();
 		construction.className = "active";
+		startButton.style.display = "none";
 	}
+	startButton.addEventListener("click",build);
+	
 	return build;
 })(document,window);
 
