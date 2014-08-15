@@ -24,7 +24,7 @@ var LaunchPad = (function(doc,win,undefined){
 			var dx = this.x - this.characters[i].x,
 				dy = this.y - this.characters[i].y;
 			this.characters[i].dist = Math.sqrt((dx*dx)+(dy*dy));
-			console.log(this.characters[i].key,this.characters[i].direction);
+			//console.log(this.characters[i].key,this.characters[i].edges.length,this.characters[i].direction);
 			switch(this.characters[i].direction){
 				case 0:
 					this.characters[i].dir = [0,-1];
@@ -93,44 +93,61 @@ var LaunchPad = (function(doc,win,undefined){
 			mass += this.characters[i].mass;
 			var dirs = ["up","right","down","left"];
 			this.characters[i].direction = -1;
-			if(this.characters[i].edges.length > 1){
-				var d1 = dirs.indexOf(this.characters[i].edges[0].direction),
-					d2 = dirs.indexOf(this.characters[i].edges[1].direction);
-				if(d1 == 0){
-					if(d2 == 1) this.characters[i].direction = 1;
-					if(d2 == 3) this.characters[i].direction = 7;
-					if(d2 == 2){
-						var d3 = dirs.indexOf(this.characters[i].edges[2].direction);
-						if(d3 == 1) this.characters[i].direction = 3;
-						if(d3 == 3) this.characters[i].direction = 1;
-					}
-				}else if(d1 == 1){
-					if(d2 == 0) this.characters[i].direction = 1;
-					if(d2 == 2) this.characters[i].direction = 3;
-					if(d2 == 3){
-						var d3 = dirs.indexOf(this.characters[i].edges[2].direction);
-						if(d3 == 0) this.characters[i].direction = 2;
-						if(d3 == 2) this.characters[i].direction = 0;
-					}
-				}else if(d1 == 2){
-					if(d2 == 1) this.characters[i].direction = 3;
-					if(d2 == 3) this.characters[i].direction = 5;
-					if(d2 == 0){
-						var d3 = dirs.indexOf(this.characters[i].edges[2].direction);
-						if(d3 == 1) this.characters[i].direction = 3;
-						if(d3 == 3) this.characters[i].direction = 1;
-					}
-				}else if(d1 == 3){
-					if(d2 == 0) this.characters[i].direction = 7;
-					if(d2 == 2) this.characters[i].direction = 5;
-					if(d2 == 1){
-						var d3 = dirs.indexOf(this.characters[i].edges[2].direction);
-						if(d3 == 0) this.characters[i].direction = 2;
-						if(d3 == 2) this.characters[i].direction = 0;
-					}
-				}
-			}else{
+			if(this.characters[i].edges.length == 1){
 				this.characters[i].direction = dirs.indexOf(this.characters[i].edges[0].direction)*2;
+			}else if(this.characters[i].edges.length == 2){
+				var d1 = dirs.indexOf(this.characters[i].edges[0].direction),
+					d2 = dirs.indexOf(this.characters[i].edges[1].direction),
+					finalDir = -1;
+				if(d1 == 0 && d2 == 1){
+					finalDir = 1;
+				}else if(d1 == 0 && d2 == 3){
+					finalDir = 7;
+				}else if(d1 == 1 && d2 == 0){
+					finalDir = 1;
+				}else if(d1 == 1 && d2 == 2){
+					finalDir = 3;
+				}else if(d1 == 2 && d2 == 1){
+					finalDir = 3;
+				}else if(d1 == 2 && d2 == 3){
+					finalDir = 5;
+				}else if(d1 == 3 && d2 == 0){
+					finalDir = 7;
+				}else if(d1 == 3 && d2 == 2){
+					finalDir = 5;
+				}
+				this.characters[i].direction = finalDir;
+			}else if(this.characters[i].edges.length == 3){
+				var d1 = dirs.indexOf(this.characters[i].edges[0].direction),
+					d2 = dirs.indexOf(this.characters[i].edges[1].direction),
+					d3 = dirs.indexOf(this.characters[i].edges[2].direction),
+					finalDir = -1;
+				if(d1 == 0 && d2 == 1){
+					finalDir = (d3 == 2)?2:0;
+				}else if(d1 == 0 && d2 == 2){
+					finalDir = (d3 == 1)?2:6;
+				}else if(d1 == 0 && d2 == 3){
+					finalDir = (d3 == 2)?6:0;
+				}else if(d1 == 1 && d2 == 0){
+					finalDir = (d3 == 2)?2:0;
+				}else if(d1 == 1 && d2 == 2){
+					finalDir = (d3 == 0)?2:4;
+				}else if(d1 == 1 && d2 == 3){
+					finalDir = (d3 == 2)?4:0;
+				}else if(d1 == 2 && d2 == 1){
+					finalDir = (d3 == 0)?2:4;
+				}else if(d1 == 2 && d2 == 3){
+					finalDir = (d3 == 1)?4:6;
+				}else if(d1 == 2 && d2 == 0){
+					finalDir = (d3 == 1)?2:6;
+				}else if(d1 == 3 && d2 == 0){
+					finalDir = (d3 == 2)?6:0;
+				}else if(d1 == 3 && d2 == 2){
+					finalDir = (d3 == 0)?6:4;
+				}else if(d1 == 3 && d2 == 1){
+					finalDir = (d3 == 2)?4:0;
+				}
+				this.characters[i].direction = finalDir;
 			}
 		}
 	}
