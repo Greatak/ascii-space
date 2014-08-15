@@ -1,0 +1,17 @@
+body,html{
+	margin:0;
+	padding:0;
+}
+
+#construction{
+	font-family:monospace;
+	height:100vh;
+	position:absolute;
+	width:100vw;
+}
+#construction.active{
+	display:inline-block;
+	height:auto;
+	left:50%;
+	width:auto;
+}
