@@ -1,4 +1,6 @@
 body,html{
+	background:#222;
+	color:#fff;
 	margin:0;
 	padding:0;
 }
@@ -19,5 +21,11 @@ body,html{
 	left:50%;
 	position:absolute;
 	top:90%;
-	transform:translate(-50%,-50%);
+}
+.particle{
+	color:#ff0;
+	margin:0;
+	padding:0;
+	position:absolute;
+	top:0;
 }
