@@ -10,6 +10,8 @@ var LaunchPad = (function(doc,win,undefined){
 		this.mass = this.characters.length;
 		this.x = 0;
 		this.y = 0;
+		this.vx = 0;
+		this.vy = 0;
 		this.displace = [];
 		this.dir = [0,0];
 		this.angle = [0,0];
@@ -65,7 +67,7 @@ var LaunchPad = (function(doc,win,undefined){
 		for(var i = this.characters.length;i--;){
 			fy += 100;
 			if(pressedKeys[this.characters[i].key.toLowerCase()]){
-				var f = 1000;
+				var f = 500;
 				if(this.characters[i].upper) f *= 2;
 				fx += f*this.characters[i].dir[0] || 0;
 				fy += f*this.characters[i].dir[1] || 0;
@@ -74,13 +76,14 @@ var LaunchPad = (function(doc,win,undefined){
 				}
 			}
 		}
-		var ax = fx/this.mass,
-			ay = fy/this.mass;
-		this.x += (fx/this.mass)*dt || 0;
-		this.y += (fy/this.mass)*dt || 0;
-		this.displace[0] += (fx/this.mass)*dt || 0;
-		this.displace[1] += (fy/this.mass)*dt || 0;
-		if(this.y > height)this.y = height;
+		this.vx += (fx/this.mass)*dt;
+		this.vy += (fy/this.mass)*dt;
+		this.x += this.vx*dt;
+		this.y += this.vy*dt;
+		if(this.y > height){
+			this.y = height;
+			this.vy = -this.vy*0.1;
+		}
 		
 		construction.style.cssText = "transform:translate("+this.x+"px,"+this.y+"px)";
 	}
@@ -156,6 +159,7 @@ var LaunchPad = (function(doc,win,undefined){
 	var particles = [];
 	var particleBin = [];
 	function Particle(c,x,y,fx,fy){
+		var r = (Math.random()/5) + 0.9;
 		this.dead = false;
 		this.life = 1;
 		this.div = doc.createElement('div');
@@ -164,8 +168,8 @@ var LaunchPad = (function(doc,win,undefined){
 		construction.appendChild(this.div);
 		this.x = x;
 		this.y = y;
-		this.fx = fx;
-		this.fy = fy;
+		this.fx = fx*r;
+		this.fy = fy*(1/r);
 		
 	}
 	function updateParticle(dt){
@@ -185,12 +189,13 @@ var LaunchPad = (function(doc,win,undefined){
 	}
 	Particle.prototype.kill = killParticle;
 	function respawnParticle(c,x,y,fx,fy){
+		var r = (Math.random()/5) + 0.9;
 		this.life = 1;
 		this.div.textContent = c;
 		this.x = x;
 		this.y = y;
-		this.fx = fx;
-		this.fy = fy;
+		this.fx = fx*r;
+		this.fy = fy*r;
 		this.dead = false;
 	}
 	Particle.prototype.respawn = respawnParticle;
@@ -225,7 +230,7 @@ var LaunchPad = (function(doc,win,undefined){
 			s.key = t[i].textContent;
 			s.edges = [];
 			s.upper = s.key == s.key.toUpperCase()?true:false;
-			s.x = t[i].offsetLeft + (t[i].offsetWidth/2);
+			s.x = t[i].offsetLeft;
 			s.y = t[i].offsetTop;
 			printed.push(s);
 		}
