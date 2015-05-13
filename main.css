@@ -6,6 +6,18 @@ body,html{
 	padding:0;
 }
 
+#background {
+    background: -webkit-gradient(linear, left top, left bottom, color-stop(0%,transparent), color-stop(100%,#7db9e8));
+    bottom: 0;
+    display: none;
+    height: 500%;
+    left: 0;
+    position: absolute;
+    width: 100%;
+}
+#background.show {
+    display: block;
+}
 #construction{
 	font-family:monospace;
 	height:100vh;

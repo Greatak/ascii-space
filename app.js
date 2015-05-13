@@ -1,7 +1,10 @@
 var LaunchPad = (function(doc,win,undefined){
 	var construction = doc.getElementById("construction"),
+        background = doc.getElementById("background"),
+        backgroundHeight = 0;
 		characters = [],
 		height = win.innerHeight*0.9,
+        width = win.innerWidth*0.4,
 		startButton = doc.getElementById("fly"),
         fontSize = 16;
 	
@@ -61,6 +64,8 @@ var LaunchPad = (function(doc,win,undefined){
 					break;
 			}
 		}
+        this.y = height;
+        background.className = 'show';
 		win.requestAnimationFrame(loop);
 	}
 	function update(dt){
@@ -81,9 +86,18 @@ var LaunchPad = (function(doc,win,undefined){
 			}
 		}
 		this.vx += (((Math.cos(this.angle)*fx) - (Math.sin(this.angle)*fy))/this.mass)*dt;
-		this.vy += ((((Math.sin(this.angle)*fx) + (Math.cos(this.angle)*fy))/this.mass)+30)*dt;
+		this.vy += ((((Math.sin(this.angle)*fx) + (Math.cos(this.angle)*fy))/this.mass)+20)*dt;
 		this.x += this.vx*dt;
-		this.y += this.vy*dt;
+        if(this.x > width){
+            this.x = width;
+        }else if(this.x < -width){
+            this.x = -width;
+        }
+        if((this.y-backgroundHeight) > (height/2)){
+            this.y += this.vy*dt;
+        }else{
+            backgroundHeight -= this.vy*dt;
+        }
 		if(this.y > height){
 			this.y = height;
 			this.vy = -this.vy*0.1;
@@ -91,6 +105,7 @@ var LaunchPad = (function(doc,win,undefined){
         this.va += dt * (t / this.moment);
         this.angle += this.va * dt;
 		construction.style.cssText = "transform:translate("+this.x+"px,"+this.y+"px) rotate("+ this.angle +"rad)";
+        background.style.cssText = "transform:translate(0,"+ backgroundHeight +"px)";
 	}
 	Rocket.prototype.update = update;
 	
